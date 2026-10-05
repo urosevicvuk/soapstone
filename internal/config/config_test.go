@@ -1,0 +1,48 @@
+package config
+
+import (
+	"log/slog"
+	"testing"
+)
+
+func env(m map[string]string) func(string) string {
+	return func(k string) string { return m[k] }
+}
+
+func TestLoadDefaults(t *testing.T) {
+	c, err := load(env(nil))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := Config{Port: 8080, AppColor: "steelblue", LogLevel: slog.LevelInfo, LogFormat: "json"}
+	if c != want {
+		t.Errorf("load() = %+v, want %+v", c, want)
+	}
+}
+
+func TestLoadValues(t *testing.T) {
+	c, err := load(env(map[string]string{
+		"PORT": "9090", "APP_COLOR": "tomato", "LOG_LEVEL": "debug", "LOG_FORMAT": "text",
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := Config{Port: 9090, AppColor: "tomato", LogLevel: slog.LevelDebug, LogFormat: "text"}
+	if c != want {
+		t.Errorf("load() = %+v, want %+v", c, want)
+	}
+}
+
+func TestLoadInvalid(t *testing.T) {
+	for _, m := range []map[string]string{
+		{"PORT": "eighty"},
+		{"PORT": "0"},
+		{"PORT": "70000"},
+		{"LOG_LEVEL": "loud"},
+		{"LOG_FORMAT": "xml"},
+	} {
+		if _, err := load(env(m)); err == nil {
+			t.Errorf("load(%v) returned no error", m)
+		}
+	}
+}
