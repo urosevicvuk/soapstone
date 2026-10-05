@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>soapstone</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, sans-serif; background: #f4f4f2; color: #222; }
+  header { padding: 2.5rem 1.5rem; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.4); }
+  header h1 { margin: 0; font-size: 2.5rem; letter-spacing: .05em; }
+  header p { margin: .5rem 0 0; font-size: 1.1rem; opacity: .9; }
+  main { max-width: 42rem; margin: 0 auto; padding: 1.5rem; }
+  form { display: grid; gap: .5rem; margin-bottom: 2rem; }
+  input, textarea, button { font: inherit; padding: .6rem; border: 1px solid #bbb; border-radius: 4px; }
+  textarea { min-height: 4.5rem; resize: vertical; }
+  button { cursor: pointer; background: #222; color: #fff; border: 0; }
+  #error { color: #b00020; min-height: 1.2em; margin: 0; }
+  ul { list-style: none; padding: 0; margin: 0; }
+  li { background: #fff; border-left: 4px solid #999; padding: .75rem 1rem; margin-bottom: .5rem; border-radius: 4px; }
+  .text { font-size: 1.1rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .meta { color: #666; font-size: .85rem; margin-top: .3rem; }
+  .empty { color: #666; }
+</style>
+</head>
+<body>
+<header style="background: {{.Color}}">
+  <h1>soapstone</h1>
+  <p>host <strong>{{.Hostname}}</strong> · store <strong>{{.Store}}</strong> · color <strong>{{.Color}}</strong></p>
+</header>
+<main>
+  <form id="form">
+    <input name="author" placeholder="Author" maxlength="{{.MaxAuthor}}" required>
+    <textarea name="text" placeholder="Try jumping" maxlength="{{.MaxText}}" required></textarea>
+    <button>Leave a message</button>
+    <p id="error"></p>
+  </form>
+
+  {{if .Messages}}
+  <ul>
+    {{range .Messages}}
+    <li>
+      <div class="text">{{.Text}}</div>
+      <div class="meta">#{{.ID}} · {{.Author}} · {{.CreatedAt.Format "2006-01-02 15:04:05 UTC"}}</div>
+    </li>
+    {{end}}
+  </ul>
+  {{else}}
+  <p class="empty">No messages yet.</p>
+  {{end}}
+</main>
+<script>
+  // Forma šalje JSON na isti API koji koristi i curl, pa osveži stranicu.
+  const form = document.getElementById("form");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const res = await fetch("/api/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ author: form.author.value, text: form.text.value }),
+    });
+    if (res.ok) {
+      location.reload();
+    } else {
+      document.getElementById("error").textContent = (await res.json()).error;
+    }
+  });
+</script>
+</body>
+</html>
