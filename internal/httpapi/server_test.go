@@ -95,6 +95,8 @@ func TestErrors(t *testing.T) {
 		{"empty text", "POST", "/api/messages", `{"author":"Ana","text":""}`, 400},
 		{"text only spaces", "POST", "/api/messages", `{"author":"Ana","text":"   "}`, 400},
 		{"missing author", "POST", "/api/messages", `{"text":"hello"}`, 400},
+		{"data after JSON", "POST", "/api/messages", `{"author":"Ana","text":"hi"} junk`, 400},
+		{"two JSON values", "POST", "/api/messages", `{"author":"Ana","text":"hi"}{}`, 400},
 		{"text too long", "POST", "/api/messages", `{"author":"Ana","text":"` + strings.Repeat("x", 281) + `"}`, 400},
 		{"limit zero", "GET", "/api/messages?limit=0", "", 400},
 		{"limit too big", "GET", "/api/messages?limit=201", "", 400},

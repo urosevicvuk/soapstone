@@ -3,6 +3,7 @@ package httpapi
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -39,7 +40,7 @@ func (s *Server) handleList(w http.ResponseWriter, r *http.Request) {
 // handleCreate: POST /api/messages sa telom {"author":"…","text":"…"}.
 func (s *Server) handleCreate(w http.ResponseWriter, r *http.Request) {
 	var in message.Input
-	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, maxBody)).Decode(&in); err != nil {
+	if err := decodeJSON(http.MaxBytesReader(w, r.Body, maxBody), &in); err != nil {
 		s.writeError(w, http.StatusBadRequest, `body must be JSON like {"author": "…", "text": "…"}`)
 		return
 	}
@@ -57,6 +58,20 @@ func (s *Server) handleCreate(w http.ResponseWriter, r *http.Request) {
 	// 201 Created, a Location kaže gde se nova poruka čita.
 	w.Header().Set("Location", "/api/messages/"+strconv.FormatInt(msg.ID, 10))
 	s.writeJSON(w, http.StatusCreated, msg)
+}
+
+// decodeJSON čita tačno jednu JSON vrednost iz tela. Decoder sam staje posle
+// prve vrednosti, pa proveravamo i da iza nje nema ničega osim razmaka:
+// `{"author":"a","text":"b"} xyz` nije ispravan JSON.
+func decodeJSON(body io.Reader, v any) error {
+	dec := json.NewDecoder(body)
+	if err := dec.Decode(v); err != nil {
+		return err
+	}
+	if _, err := dec.Token(); err != io.EOF {
+		return errors.New("unexpected data after JSON value")
+	}
+	return nil
 }
 
 // handleGet: GET /api/messages/{id}.
