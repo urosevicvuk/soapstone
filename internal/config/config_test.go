@@ -40,9 +40,22 @@ func TestLoadInvalid(t *testing.T) {
 		{"PORT": "70000"},
 		{"LOG_LEVEL": "loud"},
 		{"LOG_FORMAT": "xml"},
+		{"APP_COLOR": "rgb(255,99,71)"},
+		{"APP_COLOR": "tomato red"},
+		{"APP_COLOR": "#ff634"},
+		{"APP_COLOR": "red;}</style>"},
 	} {
 		if _, err := load(env(m)); err == nil {
 			t.Errorf("load(%v) returned no error", m)
+		}
+	}
+}
+
+func TestLoadColors(t *testing.T) {
+	for _, color := range []string{"tomato", "SteelBlue", "#f63", "#f63a", "#ff6347", "#ff6347cc"} {
+		c, err := load(env(map[string]string{"APP_COLOR": color}))
+		if err != nil || c.AppColor != color {
+			t.Errorf("APP_COLOR=%q: %+v, %v", color, c, err)
 		}
 	}
 }

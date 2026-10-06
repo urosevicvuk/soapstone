@@ -7,8 +7,12 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"regexp"
 	"strconv"
 )
+
+// colorRe prihvata ime CSS boje ili #rgb, #rgba, #rrggbb i #rrggbbaa.
+var colorRe = regexp.MustCompile(`^([a-zA-Z]+|#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8}))$`)
 
 // Config su sva podešavanja aplikacije, već proverena.
 type Config struct {
@@ -43,7 +47,13 @@ func load(getenv func(string) string) (Config, error) {
 	}
 	c.Port = port
 
+	// Boja ide u CSS stranice. Dozvoljeno je ime boje (tomato) ili #hex
+	// (#f63, #ff6347). Sve ostalo, na primer rgb(...), HTML šablon iz
+	// bezbednosnih razloga zameni sa ZgotmplZ, pa bi traka tiho ostala bez boje.
 	c.AppColor = get("APP_COLOR", "steelblue")
+	if !colorRe.MatchString(c.AppColor) {
+		return c, fmt.Errorf("APP_COLOR must be a CSS color name or #rrggbb, got %q", c.AppColor)
+	}
 
 	switch lvl := get("LOG_LEVEL", "info"); lvl {
 	case "debug":
