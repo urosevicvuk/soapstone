@@ -36,7 +36,7 @@ All settings are env variables. `make run` also loads `.env`, if it exists.
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `PORT` | `8080` | server port |
-| `APP_COLOR` | `steelblue` | page header color |
+| `APP_COLOR` | `steelblue` | page header color: a CSS color name (`tomato`) or hex (`#ff6347`) |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warn` or `error` |
 | `LOG_FORMAT` | `json` | `json` or `text`; logs go to stdout, one line per request |
 
