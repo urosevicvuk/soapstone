@@ -17,14 +17,14 @@
       systems = import inputs.systems;
 
       perSystem = {pkgs, ...}: {
+        formatter = pkgs.alejandra;
+
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
             go
             gopls
             golangci-lint
           ];
-
-          formatter = pkgs.alejandra;
         };
       };
     };
