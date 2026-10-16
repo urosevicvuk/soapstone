@@ -1,0 +1,11 @@
+# Podešavanja za golangci-lint, alat koji pokreće više lintera odjednom.
+# Linter čita kod bez pokretanja i prijavljuje greške koje kompajler pušta,
+# na primer grešku koju funkcija vrati, a niko je ne proveri.
+#
+# Format je v2 (golangci-lint 2.x). Ista pravila važe i lokalno (make lint)
+# i u CI-ju, pa ono što prođe kod vas prolazi i tamo.
+version: "2"
+
+linters:
+  # standard: errcheck, govet, ineffassign, staticcheck i unused.
+  default: standard
