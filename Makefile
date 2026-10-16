@@ -3,7 +3,7 @@
 
 APP := soapstone
 
-.PHONY: run build test fmt
+.PHONY: run build test lint fmt
 
 # Pokreće server na portu 8080 (ili PORT). `run: build` znači da make prvo
 # uradi cilj build. Ako postoji .env, njegove vrednosti se izvoze kao env
@@ -20,6 +20,10 @@ build:
 # Pokreće sve testove.
 test:
 	go test ./...
+
+# Proverava kod linterima iz .golangci.yml, isto kao CI.
+lint:
+	golangci-lint run
 
 # Formatira sav Go kod.
 fmt:

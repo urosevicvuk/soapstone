@@ -1,0 +1,14 @@
+# Prvi workflow predmeta. Za sada samo pokazuje da se izvršava i gde;
+# šta stvarno radi, pišete vi.
+name: CI
+
+# Kada se pokreće: na svaki push i na svaki pull request.
+on: [push, pull_request]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Zdravo iz GitHub Actions, commit $GITHUB_SHA"
+      - run: uname -a
+      - run: pwd && ls -la
