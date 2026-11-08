@@ -51,6 +51,7 @@ func New(st store.Store, log *slog.Logger, color string) *Server {
 	s.mux.HandleFunc("DELETE /api/messages/{id}", s.handleDelete)
 	s.mux.HandleFunc("GET /healthz", s.handleHealthz)
 	s.mux.HandleFunc("GET /readyz", s.handleReadyz)
+	s.mux.HandleFunc("GET /version", s.handleVersion)
 
 	return s
 }

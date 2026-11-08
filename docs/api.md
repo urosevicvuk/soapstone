@@ -19,6 +19,7 @@ A message:
 | `DELETE /api/messages/{id}` | 204 with no body, or 404 |
 | `GET /healthz` | 200, `ok`: the process is running |
 | `GET /readyz` | 200, `ready`; or 503 with the reason, when the database is unreachable or its schema is not on the latest version |
+| `GET /version` | 200, `{"version": "…", "commit": "…", "goVersion": "…"}`: what this binary was built from; `dev` and `unknown` unless set at build time |
 
 Examples:
 
@@ -43,3 +44,17 @@ All settings are env variables. `make run` also loads `.env`, if it exists.
 | `DATABASE_URL` | empty | Postgres URL, `postgres://user:password@host:5432/db?sslmode=disable`; empty means messages live in memory |
 
 Without `DATABASE_URL` messages live in process memory and are gone when the app stops. With it they live in Postgres. The app does not create its tables on start: run `soapstone migrate` (same `DATABASE_URL`) first, and again after every update. It creates or updates the schema and exits; when the schema is already up to date it does nothing. Until then `/readyz` returns 503.
+
+## Version and health check
+
+`soapstone version` prints the version and commit the binary was built from, and `GET /version` returns the same as JSON. Both are written into the binary at build time, with `-ldflags`:
+
+```bash
+go build -ldflags "-X github.com/urosevicvuk/soapstone/internal/buildinfo.Version=v0.2.0 \
+  -X github.com/urosevicvuk/soapstone/internal/buildinfo.Commit=$(git rev-parse --short HEAD)" \
+  -o bin/soapstone ./cmd/soapstone
+```
+
+Without them they are `dev` and `unknown`.
+
+`soapstone healthcheck` calls `/healthz` of the server on `PORT` (default 8080) on the same machine and exits with 0 when it answers 200, otherwise with 1. It is meant for a Docker `HEALTHCHECK` in an image without `curl` or a shell.
