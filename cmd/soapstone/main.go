@@ -4,8 +4,10 @@
 //
 // Upotreba:
 //
-//	soapstone [serve]   start the HTTP server (default)
-//	soapstone migrate   create or update the database schema
+//	soapstone [serve]      start the HTTP server (default)
+//	soapstone migrate      create or update the database schema
+//	soapstone version      print the version and commit
+//	soapstone healthcheck  exit 0 if the local server is healthy, 1 if not
 package main
 
 import (
@@ -20,6 +22,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/urosevicvuk/soapstone/internal/buildinfo"
 	"github.com/urosevicvuk/soapstone/internal/config"
 	"github.com/urosevicvuk/soapstone/internal/httpapi"
 	"github.com/urosevicvuk/soapstone/internal/store"
@@ -28,8 +31,10 @@ import (
 const usage = `usage: soapstone [command]
 
 commands:
-  serve     start the HTTP server (default)
-  migrate   create or update the database schema (needs DATABASE_URL)
+  serve        start the HTTP server (default)
+  migrate      create or update the database schema (needs DATABASE_URL)
+  version      print the version and commit this binary was built from
+  healthcheck  exit 0 if the server on PORT answers /healthz with 200, else 1
 `
 
 func main() {
@@ -44,6 +49,10 @@ func main() {
 		err = serve()
 	case "migrate":
 		err = migrate()
+	case "version":
+		fmt.Println("soapstone", buildinfo.Get())
+	case "healthcheck":
+		err = healthcheck()
 	case "help", "-h", "--help":
 		fmt.Print(usage)
 	default:
@@ -88,6 +97,8 @@ func serve() error {
 	defer stop()
 
 	log.Info("start",
+		"version", buildinfo.Version,
+		"commit", buildinfo.Commit,
 		"port", cfg.Port,
 		"color", cfg.AppColor,
 		"store", st.Kind(),
